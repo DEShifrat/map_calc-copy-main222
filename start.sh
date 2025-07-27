@@ -1,17 +1,12 @@
 #!/bin/bash
 
-# Проверяем установлен ли Docker и Docker Compose
-if ! command -v docker &> /dev/null; then
-    echo "Docker не установлен. Установите Docker перед запуском."
+# Проверка наличия schema.prisma
+if [ ! -f "server/prisma/schema.prisma" ]; then
+    echo "Ошибка: файл server/prisma/schema.prisma не найден!"
     exit 1
 fi
 
-if ! command -v docker-compose &> /dev/null; then
-    echo "Docker Compose не установлен. Установите Docker Compose перед запуском."
-    exit 1
-fi
-
-# Собираем и запускаем контейнеры
+# Остальной код скрипта...
 docker-compose up --build -d
 
 echo "Приложение запущено!"

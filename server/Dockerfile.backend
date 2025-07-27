@@ -1,12 +1,21 @@
 FROM node:18-alpine
 
+# Устанавливаем зависимости для Prisma (включая OpenSSL)
+RUN apk add --no-cache openssl
+
 WORKDIR /app
 
+# Сначала копируем только файлы, необходимые для установки зависимостей
 COPY package*.json ./
+COPY prisma ./prisma/
+
+# Устанавливаем зависимости
 RUN npm install
 
+# Копируем остальные файлы
 COPY . .
 
+# Генерируем Prisma клиент
 RUN npx prisma generate
 
 EXPOSE 3001
