@@ -1,35 +1,18 @@
-# --- Этап сборки ---
-# Используем официальный образ Node.js для сборки приложения
-FROM node:20-alpine AS build
+# Используем официальный образ Node.js
+FROM node:18-alpine as builder
 
-# Устанавливаем рабочую директорию внутри контейнера
+# Устанавливаем зависимости
 WORKDIR /app
+COPY package*.json ./
+RUN npm install
 
-# Копируем package.json и package-lock.json (или yarn.lock)
-# Это позволяет Docker кэшировать установку зависимостей
-COPY package.json ./
-
-# Устанавливаем зависимости, игнорируя конфликты одноранговых зависимостей
-RUN npm install --legacy-peer-deps
-
-# Копируем остальной код приложения
+# Копируем исходный код и собираем приложение
 COPY . .
-
-# Собираем приложение для продакшена
 RUN npm run build
 
-# --- Этап продакшена ---
-# Используем легковесный образ Nginx для обслуживания статических файлов
+# Используем nginx для раздачи статики
 FROM nginx:alpine
-
-# Копируем собранные статические файлы из этапа сборки в директорию Nginx
-COPY --from=build /app/dist /usr/share/nginx/html
-
-# Копируем пользовательский файл конфигурации Nginx
+COPY --from=builder /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-# Открываем порт 80 для входящих соединений
 EXPOSE 80
-
-# Запускаем Nginx
 CMD ["nginx", "-g", "daemon off;"]
