@@ -1,16 +1,10 @@
-# Используем официальный образ Node.js
-FROM node:18-alpine as builder
-
-# Устанавливаем зависимости
+FROM node:18-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
-RUN npm install
-
-# Копируем исходный код и собираем приложение
+RUN npm install --legacy-peer-deps
 COPY . .
 RUN npm run build
 
-# Используем nginx для раздачи статики
 FROM nginx:alpine
 COPY --from=builder /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
